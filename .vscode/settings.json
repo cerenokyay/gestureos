@@ -1,0 +1,7 @@
+{
+    "python.defaultInterpreterPath": "c:\\Users\\CEREN\\Desktop\\ML PROJECT\\gestureos_main\\venv\\Scripts\\python.exe",
+    "python.analysis.extraPaths": [
+        "c:\\Users\\CEREN\\Desktop\\ML PROJECT\\gestureos_main"
+    ],
+    "python.terminal.activateEnvironment": true
+}

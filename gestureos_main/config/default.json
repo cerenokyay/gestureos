@@ -1,0 +1,26 @@
+{
+  "camera_index": 0,
+  "cooldown_sec": 0.7,
+
+  "actions": {
+    "OPEN_PALM": {
+      "type": "key_press",
+      "key": "enter"
+    },
+
+    "FIST": {
+      "type": "key_press",
+      "key": "esc"
+    },
+
+    "POINT": {
+      "type": "key_press",
+      "key": "tab"
+    },
+
+    "THUMBS_UP": {
+      "type": "hotkey",
+      "keys": ["ctrl", "w"]
+    }
+  }
+}

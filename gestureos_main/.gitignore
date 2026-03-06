@@ -1,0 +1,36 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Python packaging
+build/
+dist/
+*.egg-info/
+
+# Jupyter notebooks (varsa)
+.ipynb_checkpoints/
+
+# VS Code
+.vscode/
+
+# Pytest cache (ileride test yazarsan)
+.pytest_cache/
+
+# Models / data (istersen commit etmezsin)
+*.joblib
+*.pkl
