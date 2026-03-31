@@ -1,0 +1,51 @@
+{
+  "camera_index": 0,
+  "cooldown_sec": 0.7,
+
+  "actions": {
+    "OPEN_PALM": {
+      "type": "key_press",
+      "key": "enter"
+    },
+
+    "FIST": {
+      "type": "key_press",
+      "key": "esc"
+    },
+
+    "POINT": {
+      "type": "key_press",
+      "key": "tab"
+    },
+
+    "THUMBS_UP": {
+      "type": "hotkey",
+      "keys": ["ctrl", "w"]
+    },
+
+    "ONE_FINGER": {
+      "type": "message",
+      "text": "Merhaba! 👋"
+    },
+
+    "TWO_FINGERS": {
+      "type": "message",
+      "text": "Nasılsın? 😊"
+    },
+
+    "THREE_FINGERS": {
+      "type": "message",
+      "text": "İyiyim, teşekkürler! 👍"
+    },
+
+    "FOUR_FINGERS": {
+      "type": "message",
+      "text": "Evet! ✅"
+    },
+
+    "FIVE_FINGERS": {
+      "type": "message",
+      "text": "Hayır! ❌"
+    }
+  }
+}
