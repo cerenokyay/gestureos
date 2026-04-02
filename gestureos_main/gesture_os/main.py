@@ -2,6 +2,7 @@ import json
 import argparse
 import cv2
 from pathlib import Path
+from collections import deque
 from tkinter import messagebox
 import tkinter as tk
 
@@ -41,9 +42,18 @@ def run(config_path: str = None):
 
     cam_index = int(cfg.get("camera_index", 0))
     cd = Cooldown(float(cfg.get("cooldown_sec", 0.7)))
+    min_confidence = float(cfg.get("min_confidence", 0.4))
 
     actions_cfg = cfg.get("actions", {})
     action_map = {g: build_action(spec) for g, spec in actions_cfg.items()}
+
+    sequence_actions_cfg = cfg.get("sequence_actions", {})
+    sequence_map = {tuple(seq.split(",")): build_action(spec) for seq, spec in sequence_actions_cfg.items()}
+
+    mode_triggers = cfg.get("mode_triggers", {})
+    mode_allowed = cfg.get("mode_allowed", {})
+    current_mode = cfg.get("default_mode", "default")
+    gesture_history = deque(maxlen=10)
 
     cap = cv2.VideoCapture(cam_index)
     
@@ -75,20 +85,46 @@ def run(config_path: str = None):
                 break
 
             frame = cv2.flip(frame, 1)
-            lm, annotated, mouse_pos = tracker.process(frame)
+            lm, annotated, mouse_pos, confidence = tracker.process(frame)
 
             gesture = "NO_HAND"
             if lm is not None:
-                gesture = classify_rules(lm)
-                
-                # Hareket tespit edilince aksiyon çalıştır (cooldown ile)
-                if gesture not in ["NO_HAND", "UNKNOWN"] and gesture in action_map:
+                if confidence < min_confidence:
+                    gesture = "LOW_CONF"
+                else:
+                    gesture = classify_rules(lm)
+
+            # Context/state değişimi (mode trigger)
+            if gesture in mode_triggers:
+                current_mode = mode_triggers[gesture]
+                print(f"🧭 Mod değişti: {current_mode} (tetikleyen: {gesture})")
+
+            # Move history, sequence kontrol
+            if gesture not in ["NO_HAND", "UNKNOWN", "LOW_CONF"]:
+                gesture_history.append(gesture)
+
+            sequence_matched = False
+            for seq, action in sequence_map.items():
+                if len(gesture_history) >= len(seq) and tuple(gesture_history)[-len(seq):] == seq:
+                    seq_key = ",".join(seq)
+                    if cd.allow(f"sequence:{seq_key}"):
+                        print(f"🔁 Sekans bulundu: {seq_key}")
+                        action.run(mouse_pos)
+                        sequence_matched = True
+                    break
+
+            # Tek hareket
+            if not sequence_matched and gesture not in ["NO_HAND", "UNKNOWN", "LOW_CONF"]:
+                allowed = mode_allowed.get(current_mode, [])
+                if allowed and gesture not in allowed:
+                    print(f"⚠️ '{gesture}' modu '{current_mode}' için etkin değil")
+                elif gesture in action_map:
                     if cd.allow(gesture):
-                        print(f"🎯 Hareket tespit edildi: {gesture}")
+                        print(f"🎯 Hareket tespit edildi: {gesture} (conf={confidence:.2f})")
                         action_map[gesture].run(mouse_pos)
 
-            cv2.putText(annotated, f"Gesture: {gesture}", (20, 45),
-                        cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 2)
+            cv2.putText(annotated, f"Gesture: {gesture} | Conf: {confidence:.2f}", (20, 45),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2)
             
             # Mouse hareketi sürekli olsun (cooldown olmadan)
             if mouse_pos:

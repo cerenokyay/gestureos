@@ -28,11 +28,14 @@ class HandTracker:
         frame_h, frame_w = frame_bgr.shape[:2]
         
         if not res.multi_hand_landmarks:
-            return None, annotated, None
+            return None, annotated, None, 0.0
 
         hand = res.multi_hand_landmarks[0]
         self.mp_draw.draw_landmarks(annotated, hand, self.mp_hands.HAND_CONNECTIONS)
         lm = np.array([[p.x, p.y] for p in hand.landmark], dtype=np.float32)
+        confidence = 0.0
+        if res.multi_handedness and len(res.multi_handedness) > 0:
+            confidence = float(res.multi_handedness[0].classification[0].score)
         
         # Mouse koordinatı hesapla (işaret parmağı ucu - landmark 8)
         index_finger_x = lm[8, 0]  # Normalized (0-1)
@@ -52,7 +55,7 @@ class HandTracker:
         # Debug: Ekranda göster
         cv2.circle(annotated, (int(index_finger_x * frame_w), int(index_finger_y * frame_h)), 5, (0, 255, 255), -1)
         
-        return lm, annotated, mouse_pos
+        return lm, annotated, mouse_pos, confidence
 
     def close(self):
         self.hands.close()

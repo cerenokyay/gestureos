@@ -1,6 +1,29 @@
 {
   "camera_index": 0,
   "cooldown_sec": 0.7,
+  "min_confidence": 0.4,
+
+  "mode_triggers": {
+    "FIST": "NAVIGATION",
+    "OPEN_PALM": "ACTION"
+  },
+
+  "mode_allowed": {
+    "default": ["OPEN_PALM", "FIST", "POINT", "THUMBS_UP", "PINCH"],
+    "ACTION": ["OPEN_PALM", "THUMBS_UP", "PINCH"],
+    "NAVIGATION": ["POINT", "ONE_FINGER", "TWO_FINGERS"]
+  },
+
+  "sequence_actions": {
+    "OPEN_PALM,THUMBS_UP": {
+      "type": "hotkey",
+      "keys": ["ctrl", "t"]
+    },
+    "FIST,OPEN_PALM": {
+      "type": "message",
+      "text": "Sekans gerçekleşti: FIST ardından OPEN_PALM"
+    }
+  },
 
   "actions": {
     "OPEN_PALM": {
