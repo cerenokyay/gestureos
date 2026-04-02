@@ -2,10 +2,12 @@ import json
 import argparse
 import cv2
 from pathlib import Path
+from tkinter import messagebox
+import tkinter as tk
 
 from .vision.hand_tracker import HandTracker
 from .recognition.rule_based import classify_rules
-from .actions.executor import Cooldown, KeyPress, Hotkey, Message
+from .actions.executor import Cooldown, KeyPress, Hotkey, Message, MouseMove, MouseClick
 
 
 def build_action(spec: dict):
@@ -16,6 +18,10 @@ def build_action(spec: dict):
         return Hotkey(spec["keys"])
     if t == "message":
         return Message(spec["text"])
+    if t == "mouse_move":
+        return MouseMove()
+    if t == "mouse_click":
+        return MouseClick()
     raise ValueError(f"Unknown action type: {t}")
 
 
@@ -49,8 +55,17 @@ def run(config_path: str = None):
     print(f"✓ Kamera {cam_index} başarıyla açıldı")
     print(f"✓ Eylemler yüklendi: {', '.join(action_map.keys())}")
     print("⏳ Çalışıyor... (ESC tuşuna basarak çık)")
+    print("💡 Mouse kontrol: İşaret parmağı ile cursor hareket etsin, pinch (başparmak+işaret) ile tıkla")
     
-    tracker = HandTracker(max_hands=1)
+    # Ekran boyutunu al
+    screen_size = (1920, 1080)  # Windows default
+    try:
+        import pyautogui
+        screen_size = pyautogui.size()
+    except:
+        pass
+    
+    tracker = HandTracker(max_hands=1, screen_size=screen_size)
 
     try:
         while True:
@@ -60,22 +75,42 @@ def run(config_path: str = None):
                 break
 
             frame = cv2.flip(frame, 1)
-            lm, annotated = tracker.process(frame)
+            lm, annotated, mouse_pos = tracker.process(frame)
 
             gesture = "NO_HAND"
             if lm is not None:
                 gesture = classify_rules(lm)
-                if gesture in action_map and cd.allow(gesture):
-                    print(f"🎯 Hareket tespit edildi: {gesture}")
-                    action_map[gesture].run()
+                
+                # Hareket tespit edilince aksiyon çalıştır (cooldown ile)
+                if gesture not in ["NO_HAND", "UNKNOWN"] and gesture in action_map:
+                    if cd.allow(gesture):
+                        print(f"🎯 Hareket tespit edildi: {gesture}")
+                        action_map[gesture].run(mouse_pos)
 
             cv2.putText(annotated, f"Gesture: {gesture}", (20, 45),
                         cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 2)
+            
+            # Mouse hareketi sürekli olsun (cooldown olmadan)
+            if mouse_pos:
+                try:
+                    import pyautogui
+                    pyautogui.moveTo(mouse_pos[0], mouse_pos[1], duration=0)
+                except:
+                    pass
+                
             cv2.imshow("GestureOS", annotated)
 
             if cv2.waitKey(1) & 0xFF == 27:  # ESC
-                print("✓ Çıkılıyor...")
-                break
+                root = tk.Tk()
+                root.withdraw()
+                result = messagebox.askyesno(
+                    "Çıkış Onayı",
+                    "Uygulamadan çıkmak istediğinizden emin misiniz?"
+                )
+                root.destroy()
+                if result:
+                    print("✓ Çıkılıyor...")
+                    break
     except Exception as e:
         print(f"❌ Hata oluştu: {e}")
     finally:

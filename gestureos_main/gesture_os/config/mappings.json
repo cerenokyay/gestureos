@@ -23,6 +23,11 @@
       "keys": ["ctrl", "w"]
     },
 
+    "PINCH": {
+      "type": "mouse_click",
+      "description": "Başparmak + İşaret Parmağı = Click"
+    },
+
     "ONE_FINGER": {
       "type": "message",
       "text": "Merhaba! 👋"
@@ -46,6 +51,11 @@
     "FIVE_FINGERS": {
       "type": "message",
       "text": "Hayır! ❌"
+    },
+
+    "MOUSE_MOVE": {
+      "type": "mouse_move",
+      "description": "İşaret parmağı ile cursor kontrol (otomatik)"
     }
   }
 }

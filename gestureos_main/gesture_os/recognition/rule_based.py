@@ -4,6 +4,11 @@ def _finger_up(lm: np.ndarray, tip: int, pip: int) -> bool:
     # MediaPipe normalized: y yukarı doğru küçülür
     return lm[tip, 1] < lm[pip, 1]
 
+def _finger_distance(lm: np.ndarray, finger1: int, finger2: int) -> float:
+    """İki parmak arası Euclidean mesafe"""
+    return np.sqrt((lm[finger1, 0] - lm[finger2, 0])**2 + 
+                   (lm[finger1, 1] - lm[finger2, 1])**2)
+
 def _count_fingers(lm: np.ndarray) -> int:
     """Kaç parmak açık olduğunu sayar"""
     fingers = [
@@ -19,6 +24,14 @@ def _count_fingers(lm: np.ndarray) -> int:
         count += 1
 
     return count
+
+def detect_pinch(lm: np.ndarray) -> bool:
+    """
+    Başparmak (4) ile işaret parmağı (8) arasındaki mesafe çok küçükse
+    pinch (tıklama) alır
+    """
+    distance = _finger_distance(lm, 4, 8)  # Başparmak - İşaret
+    return distance < 0.05  # Threshold: 0.05 (normalized)
 
 def classify_rules(lm: np.ndarray) -> str:
     idx_up  = _finger_up(lm, 8, 6)
@@ -36,6 +49,10 @@ def classify_rules(lm: np.ndarray) -> str:
         return "POINT"
     if thumb_out and (not idx_up) and (not mid_up) and (not ring_up) and (not pink_up):
         return "THUMBS_UP"
+
+    # Pinch (tıklama)
+    if detect_pinch(lm):
+        return "PINCH"
 
     # Parmak sayısına göre hareketler
     finger_count = _count_fingers(lm)
