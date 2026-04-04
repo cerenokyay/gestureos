@@ -34,3 +34,4 @@ dist/
 # Models / data (istersen commit etmezsin)
 *.joblib
 *.pkl
+data/images

@@ -2,3 +2,9 @@ opencv-python
 mediapipe
 numpy
 pyautogui
+pandas
+scikit-learn
+joblib
+tqdm
+matplotlib
+seaborn

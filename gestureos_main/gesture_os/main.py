@@ -42,7 +42,7 @@ def run(config_path: str = None):
 
     cam_index = int(cfg.get("camera_index", 0))
     cd = Cooldown(float(cfg.get("cooldown_sec", 0.7)))
-    min_confidence = float(cfg.get("min_confidence", 0.4))
+    min_confidence = float(cfg.get("min_confidence", 0.3))
 
     actions_cfg = cfg.get("actions", {})
     action_map = {g: build_action(spec) for g, spec in actions_cfg.items()}
